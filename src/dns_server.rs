@@ -200,7 +200,17 @@ pub async fn start_dns_server(pool: SqlitePool, domain: String) -> Result<(), Bo
     
     info!("DNS server listening on UDP {}", bind_addr);
     
-    server.block_until_done().await?;
+    // Run server without blocking - it will stop when the task is dropped
+    tokio::select! {
+        result = server.block_until_done() => {
+            if let Err(e) = result {
+                warn!("DNS server error: {}", e);
+            }
+        }
+        _ = tokio::signal::ctrl_c() => {
+            info!("DNS server shutting down...");
+        }
+    }
     
     Ok(())
 }
