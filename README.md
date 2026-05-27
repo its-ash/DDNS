@@ -8,8 +8,9 @@ A lightweight Dynamic DNS server built with Rust and Actix-web. This server allo
 - 🏠 **Host Management** - Create multiple DDNS hosts with auto-generated credentials
 - 🔄 **DynDNS Compatible** - Works with most routers supporting custom DDNS
 - 🌐 **IP Redirection** - Access routers via hostname
-- 📊 **Web Dashboard** - Simple HTML interface for managing hosts
+- 📊 **Web Dashboard** - Retro 90s Windows 95 aesthetic interface
 - 💾 **SQLite Database** - Lightweight, no external database required
+- 🔒 **Nginx Support** - Production-ready reverse proxy with SSL
 
 ## Quick Start
 
@@ -155,6 +156,33 @@ sudo make uninstall
 - `install.sh` - Automated installation script
 - `ddns-server.service` - Systemd service unit file
 - `Makefile` - Common build and deployment commands
+
+## Nginx Reverse Proxy Setup
+
+For production deployments with HTTPS and domain name:
+
+```bash
+# Quick setup (automated)
+cd nginx
+sudo ./setup-nginx.sh
+
+# Manual setup
+sudo cp nginx/ash-api.online.conf /etc/nginx/sites-available/ash-api.online
+sudo ln -s /etc/nginx/sites-available/ash-api.online /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+
+# Obtain SSL certificate
+sudo certbot certonly --nginx -d ash-api.online -d "*.ash-api.online"
+```
+
+See [nginx/README.md](nginx/README.md) for detailed nginx configuration guide.
+
+**Quick status check:**
+```bash
+cd nginx
+./check-status.sh
+```
 
 ## Usage
 

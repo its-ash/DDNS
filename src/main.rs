@@ -59,6 +59,7 @@ async fn main() -> std::io::Result<()> {
             .route("/host/create", web::post().to(handlers::create_host))
             .route("/host/delete/{id}", web::post().to(handlers::delete_host_handler))
             .route("/nic/update", web::get().to(handlers::update_ip))
+            .route("/update", web::get().to(handlers::update_ip))  // Alternative endpoint for routers
             .route("/redirect", web::get().to(handlers::redirect_to_host))
             .service(fs::Files::new("/static", "templates").show_files_listing())
     })
