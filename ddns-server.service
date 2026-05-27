@@ -1,0 +1,30 @@
+[Unit]
+Description=DDNS Server - Dynamic DNS Management
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ddns
+Group=ddns
+WorkingDirectory=/opt/ddns-server
+ExecStart=/opt/ddns-server/ddns-server
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ddns-server
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/ddns-server
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+
+# Environment
+Environment="RUST_LOG=info"
+
+[Install]
+WantedBy=multi-user.target

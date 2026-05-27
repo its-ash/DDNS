@@ -5,6 +5,7 @@ mod handlers;
 use actix_web::{web, App, HttpServer, middleware};
 use actix_session::{SessionMiddleware, storage::CookieSessionStore};
 use actix_web::cookie::Key;
+use actix_files as fs;
 use tera::Tera;
 use std::env;
 use crate::models::{AdminPassword, BaseDomain};
@@ -59,6 +60,7 @@ async fn main() -> std::io::Result<()> {
             .route("/host/delete/{id}", web::post().to(handlers::delete_host_handler))
             .route("/nic/update", web::get().to(handlers::update_ip))
             .route("/redirect", web::get().to(handlers::redirect_to_host))
+            .service(fs::Files::new("/static", "templates").show_files_listing())
     })
     .bind(format!("{}:{}", host, port))?
     .run()

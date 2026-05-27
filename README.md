@@ -55,16 +55,106 @@ SESSION_SECRET=change-this-to-a-random-secret-key-at-least-32-chars-long
 
 ### 4. Run the Server
 
+**Option A: Quick Start (Development)**
 ```bash
-# Development mode
 cargo run
+```
 
-# Production build
-cargo build --release
+**Option B: Production Build**
+```bash
+# Build release binary
+./build.sh
+# OR
+make release
+
+# Run directly
 ./target/release/ddns-server
 ```
 
+**Option C: Install as Linux Service**
+```bash
+# Build and install as systemd service
+./build.sh
+sudo ./install.sh
+
+# Start the service
+sudo systemctl start ddns-server
+sudo systemctl enable ddns-server  # Auto-start on boot
+
+# Check status
+sudo systemctl status ddns-server
+
+# View logs
+sudo journalctl -u ddns-server -f
+```
+
 The server will start on `http://0.0.0.0:8080`
+
+## Linux Deployment
+
+### Using Makefile
+
+```bash
+# Build optimized binary
+make release
+
+# Initialize database
+make init-db
+
+# Install as systemd service (requires sudo)
+sudo make install
+
+# Service management
+sudo make start        # Start service
+sudo make stop         # Stop service
+sudo make restart      # Restart service
+sudo make status       # View status
+sudo make logs         # Follow logs
+
+# Development
+make run              # Run locally
+make test             # Run tests
+make clean            # Clean build artifacts
+
+# Uninstall
+sudo make uninstall
+```
+
+### Manual Installation
+
+1. **Build the binary:**
+   ```bash
+   cargo build --release
+   ```
+
+2. **Create service user:**
+   ```bash
+   sudo useradd -r -s /bin/false -d /opt/ddns-server ddns
+   ```
+
+3. **Install files:**
+   ```bash
+   sudo mkdir -p /opt/ddns-server/templates
+   sudo cp target/release/ddns-server /opt/ddns-server/
+   sudo cp templates/* /opt/ddns-server/templates/
+   sudo cp .env /opt/ddns-server/
+   sudo chown -R ddns:ddns /opt/ddns-server
+   ```
+
+4. **Install systemd service:**
+   ```bash
+   sudo cp ddns-server.service /etc/systemd/system/
+   sudo systemctl daemon-reload
+   sudo systemctl start ddns-server
+   sudo systemctl enable ddns-server
+   ```
+
+### Service Files
+
+- `build.sh` - Build script for release binary
+- `install.sh` - Automated installation script
+- `ddns-server.service` - Systemd service unit file
+- `Makefile` - Common build and deployment commands
 
 ## Usage
 

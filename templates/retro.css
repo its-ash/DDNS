@@ -1,0 +1,331 @@
+/* ============================================
+   90s Retro Design System - DDNS Server
+   ============================================ */
+
+:root {
+  --bg-silver: #C0C0C0;
+  --bg-white: #FFFFFF;
+  --bg-yellow: #FFFFCC;
+  --fg-black: #000000;
+  --fg-gray: #808080;
+  --border-light: #FFFFFF;
+  --border-dark: #808080;
+  --border-black: #000000;
+  --accent-blue: #0000FF;
+  --accent-red: #FF0000;
+  --accent-green: #00AA00;
+  --accent-yellow: #FFFF00;
+  --visited-purple: #800080;
+  --titlebar-navy: #000080;
+  --titlebar-gradient: #1084D0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "MS Sans Serif", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  background-color: var(--bg-silver);
+  background-image:
+    linear-gradient(45deg, #b8b8b8 25%, transparent 25%),
+    linear-gradient(-45deg, #b8b8b8 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #b8b8b8 75%),
+    linear-gradient(-45deg, transparent 75%, #b8b8b8 75%);
+  background-size: 4px 4px;
+  background-position: 0 0, 0 2px, 2px -2px, -2px 0px;
+  color: var(--fg-black);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  box-shadow: inset -1px -1px 0 #404040, inset 1px 1px 0 #dfdfdf;
+  background: var(--bg-silver);
+  color: var(--fg-black);
+  font-family: "MS Sans Serif", "Segoe UI", Tahoma, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: none;
+  text-align: center;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: #d0d0d0;
+}
+
+.btn:active {
+  border-color: #808080 #ffffff #ffffff #808080;
+  box-shadow: inset 1px 1px 0 #404040, inset -1px -1px 0 #dfdfdf;
+  transform: translate(1px, 1px);
+}
+
+.btn:focus-visible {
+  outline: 2px dotted var(--fg-black);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: var(--accent-blue);
+  color: var(--bg-white);
+  border-color: #5555ff #000080 #000080 #5555ff;
+}
+
+.btn-primary:hover {
+  background: #0000dd;
+}
+
+.btn-success {
+  background: var(--accent-green);
+  color: var(--bg-white);
+  border-color: #00ff00 #006600 #006600 #00ff00;
+}
+
+.btn-success:hover {
+  background: #008800;
+}
+
+.btn-danger {
+  background: var(--accent-red);
+  color: var(--bg-white);
+  border-color: #ff5555 #800000 #800000 #ff5555;
+}
+
+.btn-danger:hover {
+  background: #cc0000;
+}
+
+.window {
+  background: var(--bg-silver);
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  box-shadow: inset -1px -1px 0 #404040, inset 1px 1px 0 #dfdfdf;
+}
+
+.window-titlebar {
+  background: linear-gradient(to right, var(--titlebar-navy), var(--titlebar-gradient));
+  color: var(--bg-white);
+  padding: 4px 8px;
+  font-weight: bold;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.window-content {
+  background: var(--bg-white);
+  border: 2px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  box-shadow: inset 1px 1px 0 #404040, inset -1px -1px 0 #dfdfdf;
+  padding: 16px;
+}
+
+.panel {
+  background: var(--bg-silver);
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  box-shadow: inset -1px -1px 0 #404040, inset 1px 1px 0 #dfdfdf;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.panel-inset {
+  background: var(--bg-white);
+  border: 2px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  box-shadow: inset 1px 1px 0 #404040, inset -1px -1px 0 #dfdfdf;
+  padding: 12px;
+}
+
+input[type="text"],
+input[type="password"],
+select {
+  padding: 4px 8px;
+  border: 2px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  box-shadow: inset 1px 1px 0 #404040, inset -1px -1px 0 #dfdfdf;
+  background: var(--bg-white);
+  color: var(--fg-black);
+  font-family: "MS Sans Serif", "Segoe UI", Tahoma, sans-serif;
+  font-size: 14px;
+  width: 100%;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+select:focus {
+  outline: 2px dotted var(--fg-black);
+  outline-offset: 2px;
+}
+
+input[type="text"]::placeholder,
+input[type="password"]::placeholder {
+  color: var(--fg-gray);
+}
+
+label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+a {
+  color: var(--accent-blue);
+  text-decoration: underline;
+}
+
+a:visited {
+  color: var(--visited-purple);
+}
+
+a:hover {
+  color: var(--accent-red);
+}
+
+h1, h2, h3 {
+  font-family: "Arial Black", Impact, Haettenschweiler, sans-serif;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+h2 {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.hr-groove {
+  border: none;
+  height: 4px;
+  background: linear-gradient(
+    to bottom,
+    #808080 0%, #808080 50%,
+    #ffffff 50%, #ffffff 100%
+  );
+  margin: 24px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-white);
+  border: 2px solid var(--fg-gray);
+}
+
+th {
+  background: var(--bg-silver);
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  padding: 8px;
+  text-align: left;
+  font-weight: bold;
+}
+
+td {
+  border: 2px solid var(--fg-gray);
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background: #e8e8e8;
+}
+
+.navbar {
+  background: var(--bg-silver);
+  border-bottom: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  padding: 8px;
+  margin-bottom: 16px;
+}
+
+.container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.alert {
+  padding: 12px 16px;
+  border: 2px solid;
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+
+.alert-error {
+  background: #ffcccc;
+  border-color: var(--accent-red);
+  color: #cc0000;
+}
+
+.alert-success {
+  background: #ccffcc;
+  border-color: var(--accent-green);
+  color: #006600;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.mt-16 { margin-top: 16px; }
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-8 { gap: 8px; }
+.gap-16 { gap: 16px; }
+
+.w-full {
+  width: 100%;
+}
+
+::selection {
+  background: var(--titlebar-navy);
+  color: var(--bg-white);
+}
