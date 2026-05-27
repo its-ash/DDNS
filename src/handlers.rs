@@ -203,9 +203,34 @@ pub async fn update_ip(
     let ip = if let Some(ip) = &query.myip {
         ip.clone()
     } else {
-        match req.peer_addr() {
-            Some(addr) => addr.ip().to_string(),
-            None => return HttpResponse::BadRequest().body("noip"),
+        // Try to get real IP from proxy headers first
+        if let Some(forwarded_for) = req.headers().get("X-Forwarded-For") {
+            if let Ok(ff_str) = forwarded_for.to_str() {
+                // X-Forwarded-For can be "client, proxy1, proxy2"
+                // Take the first (leftmost) IP which is the original client
+                ff_str.split(',').next().unwrap_or("").trim().to_string()
+            } else {
+                // Fallback to peer address
+                match req.peer_addr() {
+                    Some(addr) => addr.ip().to_string(),
+                    None => return HttpResponse::BadRequest().body("noip"),
+                }
+            }
+        } else if let Some(real_ip) = req.headers().get("X-Real-IP") {
+            if let Ok(ip_str) = real_ip.to_str() {
+                ip_str.to_string()
+            } else {
+                match req.peer_addr() {
+                    Some(addr) => addr.ip().to_string(),
+                    None => return HttpResponse::BadRequest().body("noip"),
+                }
+            }
+        } else {
+            // No proxy headers, use peer address
+            match req.peer_addr() {
+                Some(addr) => addr.ip().to_string(),
+                None => return HttpResponse::BadRequest().body("noip"),
+            }
         }
     };
 
