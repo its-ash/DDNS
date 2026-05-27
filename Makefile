@@ -52,8 +52,13 @@ deploy: release
 	@echo ""
 	@./install.sh
 	@echo ""
+	@echo "🔄 Starting service..."
+	@systemctl reset-failed ddns-server 2>/dev/null || true
+	@systemctl start ddns-server
+	@sleep 2
+	@echo ""
 	@echo "✅ Deployment complete!"
-	@systemctl status ddns-server --no-pager
+	@systemctl status ddns-server --no-pager || true
 
 # Service management (requires root)
 start:
