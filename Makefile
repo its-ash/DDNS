@@ -30,10 +30,11 @@ uninstall:
 		exit 1; \
 	fi
 	@echo "🗑️  Uninstalling DDNS Server..."
-	@systemctl stop ddns-server 2>/dev/null || true
+	@systemctl stop ddns-server --no-block 2>/dev/null || true
+	@sleep 1
 	@systemctl disable ddns-server 2>/dev/null || true
 	@rm -f /etc/systemd/system/ddns-server.service
-	@systemctl daemon-reload
+	@systemctl daemon-reload 2>/dev/null || true
 	@echo "⚠️  Service files removed. User data kept in /opt/ddns-server"
 	@echo "   To completely remove: sudo rm -rf /opt/ddns-server"
 
