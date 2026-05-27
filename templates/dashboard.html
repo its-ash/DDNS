@@ -304,8 +304,8 @@
                     <p>Configure your router with the following settings:</p>
                     <ul>
                         <li><strong>Service:</strong> Custom or DynDNS Compatible</li>
-                        <li><strong>Server:</strong> <code>{{ base_domain }}:8080</code></li>
-                        <li><strong>Update URL:</strong> <code>http://{{ base_domain }}:8080/nic/update?hostname=%HOSTNAME%&myip=%IP%</code></li>
+                        <li><strong>Server:</strong> <code>{{ base_domain }}</code></li>
+                        <li><strong>Update URL:</strong> <code>http://{{ base_domain }}/nic/update?hostname=%HOSTNAME%&myip=%IP%</code></li>
                         <li><strong>Username:</strong> (from table above)</li>
                         <li><strong>Password:</strong> (from table above)</li>
                     </ul>
@@ -315,13 +315,13 @@
                 <div class="info-panel">
                     <h4>💻 Manual Update via cURL</h4>
                     <p>Test DDNS update manually:</p>
-                    <pre><code>curl -u USERNAME:PASSWORD "http://{{ base_domain }}:8080/nic/update?myip=1.2.3.4"</code></pre>
+                    <pre><code>curl -u USERNAME:PASSWORD "http://{{ base_domain }}/nic/update?myip=1.2.3.4"</code></pre>
                 </div>
 
                 <div class="info-panel">
                     <h4>🔗 Access via Hostname</h4>
                     <p>To redirect to router IP when accessing hostname:</p>
-                    <pre><code>http://{{ base_domain }}:8080/redirect</code></pre>
+                    <pre><code>http://{{ base_domain }}/redirect</code></pre>
                     <p style="margin-top: 10px;">Set <code>Host</code> header to your hostname, or configure DNS to point to this server.</p>
                 </div>
             </div>

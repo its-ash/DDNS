@@ -2,7 +2,7 @@ use hickory_proto::rr::{Name, RData, Record, RecordType};
 use hickory_proto::op::{Header, OpCode, ResponseCode};
 use hickory_server::server::{Request, RequestHandler, ResponseHandler, ResponseInfo};
 use hickory_server::authority::MessageResponseBuilder;
-use sqlx::SqlitePool;
+use sqlx::{SqlitePool, Row};
 use std::net::{Ipv4Addr, Ipv6Addr};
 use std::str::FromStr;
 use log::{info, warn, debug};
@@ -33,20 +33,23 @@ impl DdnsAuthority {
         
         debug!("DNS lookup for: {}", hostname);
         
-        let result = sqlx::query!(
-            "SELECT current_ip FROM hosts WHERE hostname = ?",
-            hostname
-        )
-        .fetch_optional(&self.pool)
-        .await;
+        let result = sqlx::query("SELECT current_ip FROM hosts WHERE hostname = ?")
+            .bind(&hostname)
+            .fetch_optional(&self.pool)
+            .await;
 
         match result {
             Ok(Some(record)) => {
-                if let Some(ip) = record.current_ip {
-                    info!("Found IP {} for {}", ip, hostname);
-                    Some(ip)
+                if let Ok(ip) = record.try_get::<Option<String>, _>("current_ip") {
+                    if let Some(ip) = ip {
+                        info!("Found IP {} for {}", ip, hostname);
+                        Some(ip)
+                    } else {
+                        warn!("No IP address set for {}", hostname);
+                        None
+                    }
                 } else {
-                    warn!("No IP address set for {}", hostname);
+                    warn!("Failed to extract IP for {}", hostname);
                     None
                 }
             }
