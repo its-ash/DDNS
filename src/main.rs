@@ -1,6 +1,7 @@
 mod models;
 mod db;
 mod handlers;
+mod dns_server;
 
 use actix_web::{web, App, HttpServer, middleware};
 use actix_session::{SessionMiddleware, storage::CookieSessionStore};
@@ -34,6 +35,15 @@ async fn main() -> std::io::Result<()> {
 
     println!("Starting DDNS server on {}:{}", host, port);
     println!("Admin dashboard: http://{}:{}", host, port);
+    
+    // Start DNS server in background
+    let dns_pool = pool.clone();
+    let dns_domain = base_domain.clone();
+    tokio::spawn(async move {
+        if let Err(e) = dns_server::start_dns_server(dns_pool, dns_domain).await {
+            eprintln!("DNS server error: {}", e);
+        }
+    });
     
     HttpServer::new(move || {
         App::new()

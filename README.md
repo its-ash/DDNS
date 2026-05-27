@@ -11,6 +11,7 @@ A lightweight Dynamic DNS server built with Rust and Actix-web. This server allo
 - 📊 **Web Dashboard** - Retro 90s Windows 95 aesthetic interface
 - 💾 **SQLite Database** - Lightweight, no external database required
 - 🔒 **Nginx Support** - Production-ready reverse proxy with SSL
+- 🔍 **Built-in DNS Server** - Real DNS resolution for dynamic hostnames (A/AAAA records)
 
 ## Quick Start
 
@@ -50,8 +51,11 @@ DATABASE_URL=sqlite:ddns.db
 HOST=0.0.0.0
 PORT=8080
 
-# Session secret (min 32 characters)
-SESSION_SECRET=change-this-to-a-random-secret-key-at-least-32-chars-long
+# DNS Server (optional - for real DNS resolution)
+DNS_PORT=5353  # Use 53 for production (requires root)
+
+# Session secret (min 64 characters)
+SESSION_SECRET=change-this-to-a-random-secret-key-at-least-64-chars-long
 ```
 
 ### 4. Run the Server
@@ -182,6 +186,41 @@ See [nginx/README.md](nginx/README.md) for detailed nginx configuration guide.
 ```bash
 cd nginx
 ./check-status.sh
+```
+
+## DNS Server Setup
+
+The built-in DNS server allows real DNS resolution of your dynamic hostnames.
+
+### Quick Test (Port 5353)
+
+```bash
+# Start the server (DNS runs automatically alongside HTTP server)
+cargo run
+
+# Test DNS resolution
+./test-dns.sh
+# OR manually:
+dig @localhost -p 5353 home.ash-api.online AAAA
+```
+
+### Production Setup (Port 53)
+
+See [DNS-SETUP.md](DNS-SETUP.md) for complete DNS server configuration guide.
+
+**Quick overview:**
+1. Set `DNS_PORT=53` in `.env`
+2. Configure firewall: `sudo ufw allow 53/udp`
+3. Update domain nameservers to point to your server
+4. Create NS and A records for your nameserver
+
+**Test production DNS:**
+```bash
+# Query your server directly
+dig @your-server-ip home.ash-api.online
+
+# After NS propagation
+ping home.ash-api.online
 ```
 
 ## Usage
