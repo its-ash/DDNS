@@ -1,4 +1,4 @@
-.PHONY: build release clean install uninstall start stop status logs test
+.PHONY: build release clean install uninstall deploy start stop status logs test
 
 # Build targets
 build:
@@ -36,6 +36,22 @@ uninstall:
 	@systemctl daemon-reload
 	@echo "⚠️  Service files removed. User data kept in /opt/ddns-server"
 	@echo "   To completely remove: sudo rm -rf /opt/ddns-server"
+
+# Deploy: build, uninstall, and install (requires root)
+deploy: release
+	@if [ "$$(id -u)" -ne 0 ]; then \
+		echo "❌ Please run as root (use sudo make deploy)"; \
+		exit 1; \
+	fi
+	@echo ""
+	@echo "🚀 Deploying DDNS Server..."
+	@echo ""
+	@$(MAKE) uninstall 2>/dev/null || true
+	@echo ""
+	@./install.sh
+	@echo ""
+	@echo "✅ Deployment complete!"
+	@systemctl status ddns-server --no-pager
 
 # Service management (requires root)
 start:
@@ -94,6 +110,7 @@ help:
 	@echo "Installation (requires sudo):"
 	@echo "  make install       - Install as systemd service"
 	@echo "  make uninstall     - Remove systemd service"
+	@echo "  make deploy        - Build, uninstall, and install (full deployment)"
 	@echo ""
 	@echo "Service management (requires sudo):"
 	@echo "  make start         - Start service"
