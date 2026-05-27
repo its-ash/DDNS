@@ -57,18 +57,25 @@ fi
 # Copy .env if it exists
 if [ -f ".env" ]; then
     cp .env /opt/ddns-server/
+    # Ensure DNS_PORT is set (default to 5353 for non-root)
+    if ! grep -q "^DNS_PORT=" /opt/ddns-server/.env 2>/dev/null; then
+        echo "DNS_PORT=5353" >> /opt/ddns-server/.env
+        echo "✅ Added DNS_PORT=5353 to .env (use port 53 requires root)"
+    fi
     echo "✅ Copied .env file"
 else
-    echo "⚠️  No .env file found. You'll need to create one at /opt/ddns-server/.env"
-    cat > /opt/ddns-server/.env.example << 'EOF'
+    echo "⚠️  No .env file found. Creating default .env..."
+    cat > /opt/ddns-server/.env << 'EOF'
 ADMIN_PASSWORD=changeme
-BASE_DOMAIN=example.com
+BASE_DOMAIN=ash-api.online
 DATABASE_URL=sqlite:ddns.db
 HOST=0.0.0.0
-PORT=8080
-SESSION_SECRET=your-64-character-secret-key-here-change-this-to-something-random
+PORT=8181
+DNS_PORT=5353
+SESSION_SECRET=your-64-character-secret-key-here-change-this-to-something-random-and-secure
 EOF
-    echo "   Created /opt/ddns-server/.env.example as template"
+    echo "   Created /opt/ddns-server/.env - PLEASE EDIT THIS FILE!"
+    echo "   Edit: sudo nano /opt/ddns-server/.env"
 fi
 
 # Set permissions

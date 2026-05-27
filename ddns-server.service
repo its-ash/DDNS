@@ -21,7 +21,10 @@ PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
 ReadWritePaths=/opt/ddns-server
+
+# Allow binding to privileged ports (like DNS port 53)
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
 
 # Environment
 Environment="RUST_LOG=info"
