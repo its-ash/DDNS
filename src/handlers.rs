@@ -9,15 +9,6 @@ use serde::Deserialize;
 use crate::models::{CreateHostRequest, LoginRequest, UpdateIpRequest, AdminPassword, BaseDomain};
 use crate::db;
 
-// Add a simple update endpoint handler that accepts both /update and /nic/update
-pub async fn update_ip_simple(
-    req: HttpRequest,
-    query: web::Query<UpdateIpRequest>,
-    pool: web::Data<SqlitePool>,
-) -> HttpResponse {
-    update_ip(req, query, pool).await
-}
-
 #[derive(Deserialize)]
 pub struct ErrorQuery {
     error: Option<String>,
