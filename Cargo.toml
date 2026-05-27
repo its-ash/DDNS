@@ -1,0 +1,21 @@
+[package]
+name = "ddns-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4"
+actix-files = "0.6"
+actix-session = { version = "0.9", features = ["cookie-session"] }
+tokio = { version = "1", features = ["full"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dotenv = "0.15"
+env_logger = "0.11"
+log = "0.4"
+tera = "1.19"
+rand = "0.8"
+base64 = "0.21"
+sha2 = "0.10"
+chrono = "0.4"
