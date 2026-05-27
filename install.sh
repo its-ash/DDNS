@@ -29,7 +29,30 @@ echo "📋 Copying files..."
 cp target/release/ddns-server /opt/ddns-server/
 cp templates/*.html /opt/ddns-server/templates/
 cp templates/*.css /opt/ddns-server/templates/
-cp schema.sql /opt/ddns-server/
+
+# Copy schema.sql if it exists
+if [ -f "schema.sql" ]; then
+    cp schema.sql /opt/ddns-server/
+    echo "✅ Copied schema.sql"
+else
+    echo "⚠️  schema.sql not found, creating it..."
+    cat > /opt/ddns-server/schema.sql << 'EOF'
+-- Create hosts table
+CREATE TABLE IF NOT EXISTS hosts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hostname TEXT NOT NULL UNIQUE,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    current_ip TEXT,
+    last_update DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_hostname ON hosts(hostname);
+CREATE INDEX idx_username ON hosts(username);
+EOF
+    echo "✅ Created schema.sql"
+fi
 
 # Copy .env if it exists
 if [ -f ".env" ]; then
