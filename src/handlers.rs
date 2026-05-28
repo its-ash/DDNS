@@ -6,7 +6,7 @@ use base64::{Engine as _, engine::general_purpose};
 use rand::Rng;
 use serde::Deserialize;
 
-use crate::models::{CreateHostRequest, LoginRequest, UpdateIpRequest, AdminPassword, BaseDomain};
+use crate::models::{CreateHostRequest, AddHostnameRequest, LoginRequest, UpdateIpRequest, AdminPassword, BaseDomain};
 use crate::db;
 
 #[derive(Deserialize)]
@@ -73,10 +73,12 @@ pub async fn dashboard(
             .finish();
     }
 
-    let hosts = db::get_all_hosts(&pool).await.unwrap_or_default();
+    let hosts = db::get_all_hosts_with_config(&pool).await.unwrap_or_default();
+    let configs = db::get_all_configs(&pool).await.unwrap_or_default();
     
     let mut ctx = tera::Context::new();
     ctx.insert("hosts", &hosts);
+    ctx.insert("configs", &configs);
     ctx.insert("base_domain", &base_domain.0);
     
     let rendered = tmpl.render("dashboard.html", &ctx).unwrap_or_else(|_| "Error".to_string());
@@ -125,9 +127,22 @@ pub async fn create_host(
     }
 
     let hostname = format!("{}.{}", form.subdomain, base_domain.0);
-    let (username, password) = generate_credentials();
 
-    match db::create_host(&pool, &hostname, &username, &password).await {
+    let config_id = if let Some(cid) = form.config_id {
+        // Add to existing config
+        cid
+    } else {
+        // Create new config with new credentials
+        let (username, password) = generate_credentials();
+        match db::create_config(&pool, &username, &password).await {
+            Ok(id) => id,
+            Err(_) => return HttpResponse::Found()
+                .append_header(("Location", "/dashboard?error=config_create_failed"))
+                .finish(),
+        }
+    };
+
+    match db::create_host(&pool, &hostname, config_id).await {
         Ok(_) => HttpResponse::Found()
             .append_header(("Location", "/dashboard"))
             .finish(),
@@ -190,12 +205,12 @@ pub async fn update_ip(
     let (username, password) = (parts[0], parts[1]);
 
     // Verify credentials
-    let host = match db::get_host_by_username(&pool, username).await {
-        Ok(Some(h)) => h,
+    let config = match db::get_config_by_username(&pool, username).await {
+        Ok(Some(c)) => c,
         _ => return HttpResponse::Unauthorized().body("badauth"),
     };
 
-    if host.password != password {
+    if config.password != password {
         return HttpResponse::Unauthorized().body("badauth");
     }
 
@@ -234,8 +249,8 @@ pub async fn update_ip(
         }
     };
 
-    // Update IP
-    match db::update_host_ip(&pool, username, &ip).await {
+    // Update IP (this updates the config, which affects all hostnames under it)
+    match db::update_config_ip(&pool, username, &ip).await {
         Ok(_) => HttpResponse::Ok().body("good"),
         Err(_) => HttpResponse::InternalServerError().body("dnserr"),
     }
@@ -253,7 +268,7 @@ pub async fn redirect_to_host(
     // Remove port if present
     let hostname = host_header.split(':').next().unwrap_or(host_header);
 
-    match db::get_host_by_hostname(&pool, hostname).await {
+    match db::get_host_with_config_by_hostname(&pool, hostname).await {
         Ok(Some(host)) => {
             if let Some(ip) = host.current_ip {
                 let redirect_url = format!("http://{}", ip);
@@ -265,5 +280,31 @@ pub async fn redirect_to_host(
             }
         }
         _ => HttpResponse::NotFound().body("Host not found"),
+    }
+}
+
+pub async fn add_hostname_to_config(
+    path: web::Path<i64>,
+    form: web::Form<AddHostnameRequest>,
+    session: Session,
+    pool: web::Data<SqlitePool>,
+    base_domain: web::Data<BaseDomain>,
+) -> HttpResponse {
+    let is_logged_in = session.get::<bool>("logged_in").unwrap_or(Some(false)).unwrap_or(false);
+    
+    if !is_logged_in {
+        return HttpResponse::Unauthorized().finish();
+    }
+
+    let config_id = path.into_inner();
+    let hostname = format!("{}.{}", form.subdomain, base_domain.0);
+
+    match db::create_host(&pool, &hostname, config_id).await {
+        Ok(_) => HttpResponse::Found()
+            .append_header(("Location", "/dashboard"))
+            .finish(),
+        Err(_) => HttpResponse::Found()
+            .append_header(("Location", "/dashboard?error=exists"))
+            .finish(),
     }
 }

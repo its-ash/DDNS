@@ -238,55 +238,85 @@
 
         <!-- Existing Hosts Section -->
         <div class="section-card panel">
-            <div class="section-title">EXISTING HOSTS</div>
+            <div class="section-title">EXISTING CONFIGS & HOSTNAMES</div>
             <div class="section-content">
-                {% if hosts %}
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>HOSTNAME</th>
-                                <th>USERNAME</th>
-                                <th>PASSWORD</th>
-                                <th>CURRENT IP</th>
-                                <th>LAST UPDATE</th>
-                                <th>ACTION</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for host in hosts %}
-                            <tr>
-                                <td><span class="mono">{{ host.hostname }}</span></td>
-                                <td><span class="mono">{{ host.username }}</span></td>
-                                <td><span class="mono">{{ host.password }}</span></td>
-                                <td>
-                                    {% if host.current_ip %}
-                                        <span class="badge badge-success">{{ host.current_ip }}</span>
+                {% if configs %}
+                    {% for config in configs %}
+                    <div style="margin-bottom: 32px; border: 2px solid #808080; padding: 16px; background: #f0f0f0;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
+                            <div>
+                                <h3 style="margin: 0 0 12px 0;">CONFIG #{{ config.id }}</h3>
+                                <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px 16px;">
+                                    <strong>Username:</strong>
+                                    <span class="mono">{{ config.username }}</span>
+                                    <strong>Password:</strong>
+                                    <span class="mono">{{ config.password }}</span>
+                                    <strong>Current IP:</strong>
+                                    {% if config.current_ip %}
+                                        <span class="badge badge-success">{{ config.current_ip }}</span>
                                     {% else %}
                                         <span class="badge badge-warning">Not set</span>
                                     {% endif %}
-                                </td>
-                                <td>{{ host.last_update | default(value="Never") }}</td>
-                                <td>
-                                    <form method="POST" action="/host/delete/{{ host.id }}" style="display: inline;">
-                                        <button 
-                                            type="submit" 
-                                            class="btn btn-danger" 
-                                            onclick="return confirm('Delete this host?')"
-                                            aria-label="Delete host">
-                                            🗑️ DELETE
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                                    <strong>Last Update:</strong>
+                                    <span>{{ config.last_update | default(value="Never") }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hostnames for this config -->
+                        <div style="background: white; border: 2px solid #808080; padding: 12px; margin-bottom: 12px;">
+                            <h4 style="margin: 0 0 8px 0;">Hostnames using this config:</h4>
+                            {% set config_hosts = hosts | filter(attribute="config_id", value=config.id) %}
+                            {% if config_hosts %}
+                                <ul style="margin: 8px 0; padding-left: 20px;">
+                                    {% for host in config_hosts %}
+                                    <li style="margin: 4px 0; display: flex; justify-content: space-between; align-items: center;">
+                                        <span class="mono">{{ host.hostname }}</span>
+                                        <form method="POST" action="/host/delete/{{ host.id }}" style="display: inline;">
+                                            <button 
+                                                type="submit" 
+                                                class="btn btn-danger" 
+                                                style="padding: 2px 8px; font-size: 11px;"
+                                                onclick="return confirm('Delete hostname {{ host.hostname }}?')"
+                                                aria-label="Delete hostname">
+                                                🗑️ DELETE
+                                            </button>
+                                        </form>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p style="color: #808080; font-style: italic; margin: 8px 0;">No hostnames yet</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Add hostname form -->
+                        <div style="background: #ffffcc; border: 2px solid #808080; padding: 12px;">
+                            <h4 style="margin: 0 0 8px 0;">➕ Add another hostname to this config:</h4>
+                            <form method="POST" action="/config/{{ config.id }}/add-hostname" class="form-inline" style="margin: 0;">
+                                <input 
+                                    type="text" 
+                                    name="subdomain" 
+                                    placeholder="new-subdomain" 
+                                    required 
+                                    pattern="[a-z0-9-]+" 
+                                    title="Only lowercase letters, numbers, and hyphens"
+                                    style="flex: 1; min-width: 200px;"
+                                    aria-label="Subdomain">
+                                <button type="submit" class="btn btn-success">
+                                    ADD HOSTNAME
+                                </button>
+                            </form>
+                            <p style="font-size: 11px; color: #666; margin: 8px 0 0 0;">
+                                New hostname will resolve to the same IP as other hostnames in this config
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
                 {% else %}
                 <div class="empty-state">
                     <div class="empty-state-icon">📭</div>
-                    <p>NO HOSTS CREATED YET</p>
+                    <p>NO CONFIGS CREATED YET</p>
                     <p style="margin-top: 8px;">Create your first host above!</p>
                 </div>
                 {% endif %}

@@ -33,7 +33,10 @@ impl DdnsAuthority {
         
         debug!("DNS lookup for: {}", hostname);
         
-        let result = sqlx::query("SELECT current_ip FROM hosts WHERE hostname = ?")
+        // Join hosts and configs tables to get the current_ip
+        let result = sqlx::query(
+            "SELECT c.current_ip FROM hosts h JOIN configs c ON h.config_id = c.id WHERE h.hostname = ?"
+        )
             .bind(&hostname)
             .fetch_optional(&self.pool)
             .await;

@@ -68,6 +68,7 @@ async fn main() -> std::io::Result<()> {
             .route("/dashboard", web::get().to(handlers::dashboard))
             .route("/host/create", web::post().to(handlers::create_host))
             .route("/host/delete/{id}", web::post().to(handlers::delete_host_handler))
+            .route("/config/{id}/add-hostname", web::post().to(handlers::add_hostname_to_config))
             .route("/nic/update", web::get().to(handlers::update_ip))
             .route("/update", web::get().to(handlers::update_ip))  // Alternative endpoint for routers
             .route("/redirect", web::get().to(handlers::redirect_to_host))
