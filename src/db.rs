@@ -1,4 +1,4 @@
-use sqlx::{SqlitePool, sqlite::SqlitePoolOptions};
+use sqlx::{SqlitePool, sqlite::SqlitePoolOptions, Row};
 use crate::models::{Host, Config, HostWithConfig};
 use chrono::Utc;
 
@@ -10,6 +10,30 @@ pub async fn init_db(database_url: &str) -> Result<SqlitePool, sqlx::Error> {
                 .create_if_missing(true)
         )
         .await?;
+
+    // Check if we need to migrate from old schema
+    let needs_migration = sqlx::query("SELECT name FROM sqlite_master WHERE type='table' AND name='hosts'")
+        .fetch_optional(&pool)
+        .await?
+        .is_some();
+
+    if needs_migration {
+        // Check if old schema (has username column in hosts table)
+        let has_old_schema = sqlx::query(
+            "SELECT COUNT(*) as count FROM pragma_table_info('hosts') WHERE name='username'"
+        )
+        .fetch_one(&pool)
+        .await
+        .ok()
+        .and_then(|row| row.try_get::<i64, _>("count").ok())
+        .unwrap_or(0) > 0;
+
+        if has_old_schema {
+            log::info!("Detected old database schema, migrating...");
+            migrate_old_schema(&pool).await?;
+            log::info!("Migration complete!");
+        }
+    }
 
     // Create configs table
     sqlx::query(
@@ -55,6 +79,68 @@ pub async fn init_db(database_url: &str) -> Result<SqlitePool, sqlx::Error> {
         .await?;
 
     Ok(pool)
+}
+
+async fn migrate_old_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
+    // Create configs table
+    sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS configs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            current_ip TEXT,
+            last_update DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+        "#,
+    )
+    .execute(pool)
+    .await?;
+
+    // Create new hosts table
+    sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS hosts_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            hostname TEXT NOT NULL UNIQUE,
+            config_id INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (config_id) REFERENCES configs(id) ON DELETE CASCADE
+        )
+        "#,
+    )
+    .execute(pool)
+    .await?;
+
+    // Migrate data from old hosts table to configs
+    sqlx::query(
+        "INSERT INTO configs (username, password, current_ip, last_update, created_at) \
+         SELECT username, password, current_ip, last_update, created_at FROM hosts"
+    )
+    .execute(pool)
+    .await?;
+
+    // Migrate data from old hosts table to new hosts table
+    sqlx::query(
+        "INSERT INTO hosts_new (hostname, config_id, created_at) \
+         SELECT h.hostname, c.id, h.created_at \
+         FROM hosts h \
+         JOIN configs c ON h.username = c.username"
+    )
+    .execute(pool)
+    .await?;
+
+    // Drop old hosts table and rename new one
+    sqlx::query("DROP TABLE hosts")
+        .execute(pool)
+        .await?;
+
+    sqlx::query("ALTER TABLE hosts_new RENAME TO hosts")
+        .execute(pool)
+        .await?;
+
+    Ok(pool).map(|_| ())
 }
 
 // Config operations
